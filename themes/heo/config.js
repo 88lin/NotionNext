@@ -6,6 +6,7 @@ const CONFIG = {
   // 首页顶部通知条滚动内容，如不需要可以留空 []
   HEO_NOTICE_BAR: [
     { title: '欢迎来到故人博客', url: 'https://yyyy.gay' },
+    { title: '点击扫码关注微信公众号', url: 'https://nav.yyyy.gay/gzh/index.html' },
     { title: '点击使用ChatGPT', url: 'https://yyyy.gay/article/34' }
   ],
 
@@ -108,7 +109,7 @@ const CONFIG = {
   HEO_SOCIAL_CARD_TITLE_1: '公众号',
   HEO_SOCIAL_CARD_TITLE_2: '快人一步获取最新文章',
   HEO_SOCIAL_CARD_TITLE_3: '点击扫码关注公众号',
-  HEO_SOCIAL_CARD_URL: 'https://520.txsb.gq/gzh/index.html',
+  HEO_SOCIAL_CARD_URL: 'https://nav.yyyy.gay/gzh/index.html',
 
   // *****  以下配置无效，只是预留开发 ****
   // 菜单配置
@@ -122,9 +123,9 @@ const CONFIG = {
   HEO_POST_LIST_COVER_HOVER_ENLARGE: false, // 列表鼠标悬停放大
 
   HEO_POST_LIST_COVER_DEFAULT: true, // 封面为空时用站点背景做默认封面
-  HEO_POST_LIST_SUMMARY: true, // 文章摘要
+  HEO_POST_LIST_SUMMARY: false, // 文章摘要
   HEO_POST_LIST_PREVIEW: false, // 读取文章预览
-  HEO_POST_LIST_IMG_CROSSOVER: true, // 博客列表图片左右交错
+  HEO_POST_LIST_IMG_CROSSOVER: false, // 博客列表图片左右交错
 
   HEO_ARTICLE_ADJACENT: true, // 显示上一篇下一篇文章推荐
   HEO_ARTICLE_COPYRIGHT: true, // 显示文章版权声明
