@@ -151,7 +151,7 @@ export default function AlgoliaSearchModal({ cRef }) {
   // 定义节流函数，确保在用户停止输入一段时间后才会调用处理搜索的方法
   const throttledHandleInputChange = useRef(throttle((query, page = 0) => {
     handleSearch(query, page);
-  }, 1000));
+  }, 600));
 
   // 用于存储搜索延迟的计时器
   const searchTimer = useRef(null);
@@ -168,7 +168,7 @@ export default function AlgoliaSearchModal({ cRef }) {
     // 设置新的计时器，在用户停止输入一段时间后触发搜索
     searchTimer.current = setTimeout(() => {
       throttledHandleInputChange.current(query);
-    }, 800);
+    }, 500);
   };
 
   /**
