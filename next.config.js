@@ -44,8 +44,6 @@ module.exports = withBundleAnalyzer({
       'gcore.jsdelivr.net',
       'p1.qhimg.com',
       'webmention.io',
-      'img1.doubanio.com',
-      'img2.doubanio.com',
       'ko-fi.com'
     ]
   },
