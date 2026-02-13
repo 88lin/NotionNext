@@ -131,15 +131,15 @@ const Header = props => {
           animation: fade-in-up 0.3s ease-in-out;
         }
         .heo-glass-nav {
-          background-color: rgba(249, 248, 247, 0.58);
-          backdrop-filter: blur(8px) saturate(160%) brightness(1.05);
-          -webkit-backdrop-filter: blur(8px) saturate(160%) brightness(1.05);
+          background-color: rgba(255, 255, 255, 0.65);
+          backdrop-filter: blur(20px) saturate(160%);
+          -webkit-backdrop-filter: blur(20px) saturate(160%);
           border-bottom: none;
         }
         :global(.dark) .heo-glass-nav {
-          background-color: rgba(25, 25, 27, 0.55);
-          backdrop-filter: blur(8px) saturate(150%) brightness(1.08);
-          -webkit-backdrop-filter: blur(8px) saturate(150%) brightness(1.08);
+          background-color: rgba(27, 28, 32, 0.65);
+          backdrop-filter: blur(24px) saturate(120%);
+          -webkit-backdrop-filter: blur(24px) saturate(120%);
           border-bottom: none;
         }
       `}</style>
