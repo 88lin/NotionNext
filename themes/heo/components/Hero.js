@@ -212,7 +212,7 @@ function GroupMenu() {
       </SmartLink>
     </div>
   )
-} 
+}
 
 /**
  * 置顶文章区域

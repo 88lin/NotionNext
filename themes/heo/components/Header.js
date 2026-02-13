@@ -132,14 +132,14 @@ const Header = props => {
         }
         .heo-glass-nav {
           background-color: rgba(249, 248, 247, 0.58);
-          backdrop-filter: blur(5px) saturate(180%) brightness(1.05);
-          -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(1.05);
+          backdrop-filter: blur(8px) saturate(160%) brightness(1.05);
+          -webkit-backdrop-filter: blur(8px) saturate(160%) brightness(1.05);
           border-bottom: none;
         }
         :global(.dark) .heo-glass-nav {
           background-color: rgba(25, 25, 27, 0.55);
-          backdrop-filter: blur(6px) saturate(160%) brightness(1.08);
-          -webkit-backdrop-filter: blur(6px) saturate(160%) brightness(1.08);
+          backdrop-filter: blur(8px) saturate(150%) brightness(1.08);
+          -webkit-backdrop-filter: blur(8px) saturate(150%) brightness(1.08);
           border-bottom: none;
         }
       `}</style>
