@@ -13,10 +13,10 @@ const BLOG = {
   APPEARANCE: process.env.NEXT_PUBLIC_APPEARANCE || 'light', // ['light', 'dark', 'auto'], // light 日间模式 ， dark夜间模式， auto根据时间和主题自动夜间模式
   APPEARANCE_DARK_TIME: process.env.NEXT_PUBLIC_APPEARANCE_DARK_TIME || [23, 8], // 夜间模式起至时间，false时关闭根据时间自动切换夜间模式
 
-  AUTHOR: process.env.NEXT_PUBLIC_AUTHOR || '茉灵智库', // 您的昵称
-  BIO: process.env.NEXT_PUBLIC_BIO || '分享技术与生活的无限可能✨', // 作者简介
-  LINK: process.env.NEXT_PUBLIC_LINK || 'https://blog.88lin.eu.org', // 网站地址
-  SEO_BRAND: process.env.NEXT_PUBLIC_SEO_BRAND || '茉灵智库', // SEO标题后缀的短品牌名（与Notion TITLE解耦，避免标题过长）
+  AUTHOR: process.env.NEXT_PUBLIC_AUTHOR || 'LHX engine', // 您的昵称
+  BIO: process.env.NEXT_PUBLIC_BIO || '跟随我的脚步进入知识的海洋✨', // 作者简介
+  LINK: process.env.NEXT_PUBLIC_LINK || 'https://lhxengine.top', // 网站地址
+  SEO_BRAND: process.env.NEXT_PUBLIC_SEO_BRAND || 'LHX engine', // SEO标题后缀的短品牌名（与Notion TITLE解耦，避免标题过长）
   KEYWORDS: process.env.NEXT_PUBLIC_KEYWORD || '技术教程, 软件资源, 实用工具, 考研资料, 论文下载, 面试题库, 经验分享', // 网站关键词 英文逗号隔开
   BLOG_FAVICON: process.env.NEXT_PUBLIC_FAVICON || '/favicon.svg', // blog favicon 配置, 默认使用 /public/favicon.ico
   BEI_AN: process.env.NEXT_PUBLIC_BEI_AN || '萌ICP备20249980号', // 备案号 闽ICP备XXXXXX
