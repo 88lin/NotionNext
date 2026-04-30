@@ -243,13 +243,18 @@ const Style = () => {
       inset: 0;
       background-size: cover;
       background-position: center;
-      transform: scale(1.03);
+      transform: scale(1.01);
       filter: saturate(1.05);
     }
     #theme-fuwari .fuwari-hero-mask {
       position: absolute;
       inset: 0;
-      background: linear-gradient(120deg, rgba(15, 23, 42, 0.66), rgba(15, 23, 42, 0.3));
+      background: linear-gradient(
+        120deg,
+        rgba(15, 23, 42, 0.32) 0%,
+        rgba(15, 23, 42, 0.14) 55%,
+        rgba(15, 23, 42, 0.04) 100%
+      );
       z-index: 1;
     }
     #theme-fuwari .fuwari-hero-btn {
@@ -564,9 +569,14 @@ const Style = () => {
     #theme-fuwari #posts-wrapper > article {
       animation: fuwari-enter .28s ease both;
     }
+    /* Readmore 的 modal 使用 fixed 定位；文章主卡若保留 transform/animation 会把它困在卡片内 */
+    #theme-fuwari article.fuwari-card {
+      animation: none !important;
+      transform: none !important;
+    }
     @keyframes fuwari-enter {
       from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      to { opacity: 1; transform: none; }
     }
   `}</style>
 }
