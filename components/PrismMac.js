@@ -11,7 +11,7 @@ import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
 
 // mermaid图
 import { loadExternalResource } from '@/lib/utils'
-import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useGlobal } from '@/lib/global'
 import { siteConfig } from '@/lib/config'
 
@@ -21,7 +21,7 @@ import { siteConfig } from '@/lib/config'
  * @returns
  */
 const PrismMac = () => {
-  const router = useRouter()
+  const pathname = usePathname()
   const { isDarkMode } = useGlobal()
   const codeMacBar = siteConfig('CODE_MAC_BAR')
   const prismjsAutoLoader = siteConfig('PRISM_JS_AUTO_LOADER')
@@ -37,6 +37,7 @@ const PrismMac = () => {
 
   const codeCollapse = siteConfig('CODE_COLLAPSE')
   const codeCollapseExpandDefault = siteConfig('CODE_COLLAPSE_EXPAND_DEFAULT')
+  const codeCollapseMinLines = siteConfig('CODE_COLLAPSE_MIN_LINES')
 
   useEffect(() => {
     if (codeMacBar) {
@@ -58,9 +59,13 @@ const PrismMac = () => {
 
       renderPrismMac(codeLineNumbers)
       renderMermaid(mermaidCDN)
-      renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
+      renderCollapseCode(
+        codeCollapse,
+        codeCollapseExpandDefault,
+        codeCollapseMinLines
+      )
     })
-  }, [router, isDarkMode])
+  }, [pathname, isDarkMode])
 
   useEffect(() => {
     const observer = new MutationObserver((mutationsList) => {
@@ -142,7 +147,11 @@ const loadPrismThemeCSS = (
 /**
  * 将代码块转为可折叠对象
  */
-const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
+const renderCollapseCode = (
+  codeCollapse,
+  codeCollapseExpandDefault,
+  codeCollapseMinLines
+) => {
   if (!codeCollapse) {
     return
   }
@@ -154,6 +163,10 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
     }
 
     const code = codeBlock.querySelector('code')
+    if (!code || !shouldCollapseCodeBlock(code, codeCollapseMinLines)) {
+      continue
+    }
+
     const className = code?.getAttribute('class') || ''
     const match = className.match(/language-([^\s]+)/)
     const language = match?.[1] || 'code'
@@ -198,6 +211,18 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
   }
 }
 
+const shouldCollapseCodeBlock = (code, codeCollapseMinLines) => {
+  const minLines = Number(codeCollapseMinLines)
+  if (!Number.isFinite(minLines) || minLines <= 0) {
+    return true
+  }
+
+  const text = code.textContent || ''
+  const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  const lineCount = normalizedText.replace(/\n$/, '').split('\n').length
+  return lineCount > minLines
+}
+
 /**
  * 将mermaid语言 渲染成图片
  */
@@ -211,7 +236,7 @@ const renderMermaid = mermaidCDN => {
       if (chart && !codeBlock.querySelector('.mermaid')) {
         const mermaidChart = document.createElement('pre')
         mermaidChart.className = 'mermaid'
-        mermaidChart.innerHTML = chart
+        mermaidChart.textContent = chart
         codeBlock.appendChild(mermaidChart)
       }
     }
