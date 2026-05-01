@@ -11,7 +11,7 @@ import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
 
 // mermaid图
 import { loadExternalResource } from '@/lib/utils'
-import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useGlobal } from '@/lib/global'
 import { siteConfig } from '@/lib/config'
 
@@ -21,7 +21,7 @@ import { siteConfig } from '@/lib/config'
  * @returns
  */
 const PrismMac = () => {
-  const pathname = usePathname()
+  const router = useRouter()
   const { isDarkMode } = useGlobal()
   const codeMacBar = siteConfig('CODE_MAC_BAR')
   const prismjsAutoLoader = siteConfig('PRISM_JS_AUTO_LOADER')
@@ -39,11 +39,6 @@ const PrismMac = () => {
   const codeCollapseExpandDefault = siteConfig('CODE_COLLAPSE_EXPAND_DEFAULT')
 
   useEffect(() => {
-    const article = getNotionArticle()
-    if (!article) return
-    const hasCodeBlocks = Boolean(article.querySelector('pre.notion-code'))
-    if (!hasCodeBlocks) return
-
     if (codeMacBar) {
       loadExternalResource('/css/prism-mac-style.css', 'css')
     }
@@ -151,10 +146,7 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
   if (!codeCollapse) {
     return
   }
-
-  const COLLAPSE_MIN_LINES = Number(siteConfig('CODE_COLLAPSE_MIN_LINES', 20))
   const codeBlocks = document.querySelectorAll('.code-toolbar')
-
   for (const codeBlock of codeBlocks) {
     // 判断当前元素是否被包裹
     if (codeBlock.closest('.collapse-wrapper') || containsCustomCodeBlock(codeBlock)) {
@@ -168,22 +160,18 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
 
     const collapseWrapper = document.createElement('div')
     collapseWrapper.className = 'collapse-wrapper w-full py-2'
-
     const panelWrapper = document.createElement('div')
-    panelWrapper.className = 'collapse-panel-wrapper'
+    panelWrapper.className =
+      'border dark:border-gray-600 rounded-md hover:border-indigo-500 duration-200 transition-colors'
 
-    const header = document.createElement('button')
-    header.type = 'button'
-    header.className = 'collapse-header'
-
-    const label = language
-      ? `${language.toUpperCase()} · ${lineCount} lines`
-      : `${lineCount} lines`
-
-    header.innerHTML = `<span class="collapse-label">${label}</span><svg class="collapse-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.293 6.293a1 1 0 0 1 1.414 0L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414l-3 3a1 1 0 0 1-1.414 0l-3-3a1 1 0 0 1 0-1.414z" clip-rule="evenodd"/></svg>`
+    const header = document.createElement('div')
+    header.className =
+      'flex justify-between items-center px-4 py-2 cursor-pointer select-none'
+    header.innerHTML = `<h3 class="text-lg font-medium">${language}</h3><svg class="transition-all duration-200 w-5 h-5 transform rotate-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.293 6.293a1 1 0 0 1 1.414 0L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414l-3 3a1 1 0 0 1-1.414 0l-3-3a1 1 0 0 1 0-1.414z" clip-rule="evenodd"/></svg>`
 
     const panel = document.createElement('div')
-    panel.className = 'collapse-panel'
+    panel.className =
+      'invisible h-0 transition-transform duration-200 border-t border-gray-300'
 
     panelWrapper.appendChild(header)
     panelWrapper.appendChild(panel)
@@ -193,19 +181,20 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
     codeBlock.parentNode.insertBefore(collapseWrapper, codeBlock)
     panel.appendChild(codeBlock)
 
-    function setExpanded(expanded) {
-      panelWrapper.classList.toggle('is-expanded', expanded)
-      panel.classList.toggle('is-expanded', expanded)
-      header.setAttribute('aria-expanded', expanded ? 'true' : 'false')
-      panel.style.maxHeight = expanded ? `${panel.scrollHeight}px` : '0px'
+    function collapseCode() {
+      panel.classList.toggle('invisible')
+      panel.classList.toggle('h-0')
+      panel.classList.toggle('h-auto')
+      header.querySelector('svg').classList.toggle('rotate-180')
+      panelWrapper.classList.toggle('border-gray-300')
     }
 
-    header.addEventListener('click', () => {
-      const expanded = panelWrapper.classList.contains('is-expanded')
-      setExpanded(!expanded)
-    })
-
-    setExpanded(Boolean(codeCollapseExpandDefault))
+    // 点击后折叠展开代码
+    header.addEventListener('click', collapseCode)
+    // 是否自动展开
+    if (codeCollapseExpandDefault) {
+      header.click()
+    }
   }
 }
 
@@ -213,24 +202,16 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
  * 将mermaid语言 渲染成图片
  */
 const renderMermaid = mermaidCDN => {
-  const articles = getNotionArticles()
-  if (!articles || articles.length === 0) return
-
-  let hasMermaidBlocks = false
-
-  for (const article of articles) {
+  const processArticle = article => {
     const mermaidCodeBlocks = article.querySelectorAll(
       '.notion-code.language-mermaid'
     )
     for (const codeBlock of mermaidCodeBlocks) {
       const chart = codeBlock.querySelector('code')?.textContent
-      if (!chart) continue
-      hasMermaidBlocks = true
-      let mermaidChart = codeBlock.querySelector('.mermaid')
-      if (!mermaidChart) {
-        mermaidChart = document.createElement('pre')
+      if (chart && !codeBlock.querySelector('.mermaid')) {
+        const mermaidChart = document.createElement('pre')
         mermaidChart.className = 'mermaid'
-        mermaidChart.textContent = chart
+        mermaidChart.innerHTML = chart
         codeBlock.appendChild(mermaidChart)
       }
     }

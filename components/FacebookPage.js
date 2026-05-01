@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { FacebookProvider, Page } from 'react-facebook'
+import { FacebookIcon } from 'react-share'
 
 /**
  * facebook个人主页
@@ -18,9 +19,7 @@ const FacebookPage = () => {
           rel="noopener noreferrer"
           className="p-1 pr-2 pt-0"
         >
-          <span className='inline-flex w-7 h-7 rounded-full items-center justify-center bg-blue-600 text-white'>
-            <i className='fab fa-facebook-f' />
-          </span>
+          <FacebookIcon size={28} round />
         </a>
         <a href={siteConfig('FACEBOOK_PAGE')} rel="noopener noreferrer" target="_blank">
           {siteConfig('FACEBOOK_PAGE_TITLE')}
