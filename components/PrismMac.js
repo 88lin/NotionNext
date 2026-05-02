@@ -41,58 +41,96 @@ const PrismMac = () => {
 
   useEffect(() => {
     let isDisposed = false
+    let initialized = false
+    let waitForCodeBlocksObserver = null
     let stopLineNumbers = () => {}
+    let stopMermaid = () => {}
 
-    const article = getNotionArticle()
-    if (!article) return
-    const hasCodeBlocks = Boolean(article.querySelector('pre.notion-code'))
-    if (!hasCodeBlocks) return
-    if (codeMacBar) {
-      loadExternalResource('/css/prism-mac-style.css', 'css')
-    }
-    // 加载prism样式
-    loadPrismThemeCSS(
-      isDarkMode,
-      prismThemeSwitch,
-      prismThemeDarkPath,
-      prismThemeLightPath,
-      prismThemePrefixPath
-    )
-    // 折叠代码
-    loadExternalResource(prismjsAutoLoader, 'js')
-      .then(() => {
-        if (isDisposed) return
-        try {
-          if (typeof window !== 'undefined' && !window.Prism) {
-            window.Prism = Prism
-          }
-          if (window?.Prism?.plugins?.autoloader) {
-            window.Prism.plugins.autoloader.languages_path = prismjsPath
-          }
-
-          const dispose = renderPrismMac(codeLineNumbers)
-          stopLineNumbers = typeof dispose === 'function' ? dispose : () => {}
-          renderMermaid(mermaidCDN)
-          renderCollapseCode(
-            codeCollapse,
-            codeCollapseExpandDefault,
-            codeCollapseMinLines
-          )
-        } catch (err) {
-          console.warn('[PrismMac] render failed:', err)
-        }
-      })
-      .catch(err => {
-        console.warn('[PrismMac] prism autoloader load failed:', err)
-      })
-
-    return () => {
-      isDisposed = true
+    const cleanupPrism = () => {
       try {
         stopLineNumbers()
       } catch (e) {
         /* ignore */
       }
+
+      try {
+        stopMermaid()
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
+    const initializeWhenCodeReady = () => {
+      if (isDisposed || initialized) return true
+
+      const article = getNotionArticle()
+      const hasCodeBlocks = Boolean(article?.querySelector('pre.notion-code'))
+      if (!hasCodeBlocks) return false
+
+      initialized = true
+      if (codeMacBar) {
+        loadExternalResource('/css/prism-mac-style.css', 'css')
+      }
+      // 加载prism样式
+      loadPrismThemeCSS(
+        isDarkMode,
+        prismThemeSwitch,
+        prismThemeDarkPath,
+        prismThemeLightPath,
+        prismThemePrefixPath
+      )
+      // 折叠代码
+      loadExternalResource(prismjsAutoLoader, 'js')
+        .then(() => {
+          if (isDisposed) return
+          try {
+            cleanupPrism()
+            if (typeof window !== 'undefined' && !window.Prism) {
+              window.Prism = Prism
+            }
+            if (window?.Prism?.plugins?.autoloader) {
+              window.Prism.plugins.autoloader.languages_path = prismjsPath
+            }
+
+            const dispose = renderPrismMac(codeLineNumbers)
+            stopLineNumbers = typeof dispose === 'function' ? dispose : () => {}
+            const disposeMermaid = renderMermaid(mermaidCDN)
+            stopMermaid =
+              typeof disposeMermaid === 'function' ? disposeMermaid : () => {}
+            renderCollapseCode(
+              codeCollapse,
+              codeCollapseExpandDefault,
+              codeCollapseMinLines
+            )
+            renderCustomCode()
+          } catch (err) {
+            console.warn('[PrismMac] render failed:', err)
+          }
+        })
+        .catch(err => {
+          console.warn('[PrismMac] prism autoloader load failed:', err)
+        })
+
+      return true
+    }
+
+    if (!initializeWhenCodeReady()) {
+      waitForCodeBlocksObserver = new MutationObserver(() => {
+        if (initializeWhenCodeReady()) {
+          waitForCodeBlocksObserver?.disconnect()
+          waitForCodeBlocksObserver = null
+        }
+      })
+      waitForCodeBlocksObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+      })
+    }
+
+    return () => {
+      isDisposed = true
+      waitForCodeBlocksObserver?.disconnect()
+      cleanupPrism()
     }
   }, [
     pathname,
@@ -112,16 +150,41 @@ const PrismMac = () => {
   ])
 
   useEffect(() => {
+    let frameId = null
+    const scheduleRenderCustomCode = () => {
+      if (frameId !== null) return
+      frameId = requestAnimationFrame(() => {
+        frameId = null
+        renderCustomCode()
+      })
+    }
+
+    scheduleRenderCustomCode()
+    const article = getNotionArticle()
+    if (!article) {
+      return () => {
+        if (frameId !== null) {
+          cancelAnimationFrame(frameId)
+        }
+      }
+    }
+
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === 'childList') {
-          renderCustomCode();
+          scheduleRenderCustomCode()
+          break
         }
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
+    observer.observe(article, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId)
+      }
+    };
+  }, [pathname]);
 
   return <></>
 }
@@ -282,6 +345,9 @@ const shouldCollapseCodeBlock = (code, codeCollapseMinLines) => {
  * 将mermaid语言 渲染成图片
  */
 const renderMermaid = mermaidCDN => {
+  const bindingToken = `prism-${Date.now()}-${Math.random()}`
+  const articleObservers = new Map()
+
   const processArticle = article => {
     const mermaidCodeBlocks = article.querySelectorAll(
       '.notion-code.language-mermaid'
@@ -326,13 +392,14 @@ const renderMermaid = mermaidCDN => {
       attributes: true,
       subtree: true
     })
+    articleObservers.set(article, observer)
   }
 
   const scanAndBind = () => {
     const articles = getNotionArticles()
     for (const article of articles) {
-      if (article.dataset.prismMermaidBound === '1') continue
-      article.dataset.prismMermaidBound = '1'
+      if (article.dataset.prismMermaidBound) continue
+      article.dataset.prismMermaidBound = bindingToken
       bindArticleObserver(article)
     }
   }
@@ -352,6 +419,21 @@ const renderMermaid = mermaidCDN => {
     subtree: true
   })
   window.__prismMermaidRootObserver = rootObserver
+
+  return () => {
+    for (const [article, observer] of articleObservers) {
+      observer.disconnect()
+      if (article.dataset.prismMermaidBound === bindingToken) {
+        delete article.dataset.prismMermaidBound
+      }
+    }
+    articleObservers.clear()
+
+    rootObserver.disconnect()
+    if (window.__prismMermaidRootObserver === rootObserver) {
+      window.__prismMermaidRootObserver = null
+    }
+  }
 }
 
 /**
