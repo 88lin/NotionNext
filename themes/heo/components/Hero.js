@@ -224,7 +224,7 @@ function TopGroup(props) {
   const { locale } = useGlobal()
   const todayCardRef = useRef()
   function handleMouseLeave() {
-    todayCardRef.current.coverUp()
+    todayCardRef.current?.coverUp?.()
   }
 
   // 获取置顶推荐文章

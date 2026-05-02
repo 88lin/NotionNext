@@ -317,9 +317,54 @@ const LayoutSlug = props => {
   const [hasCode, setHasCode] = useState(false)
 
   useEffect(() => {
-    const hasCode = document.querySelectorAll('[class^="language-"]').length > 0
-    setHasCode(hasCode)
-  }, [])
+    if (!post || lock) {
+      setHasCode(false)
+      return
+    }
+
+    let frameId = null
+    const article = document.getElementById('article-wrapper')
+
+    const updateHasCode = () => {
+      frameId = null
+      const nextHasCode = Boolean(
+        article?.querySelector(
+          'pre.notion-code, .code-toolbar, pre[class*="language-"], code[class*="language-"]'
+        )
+      )
+      setHasCode(current => (current === nextHasCode ? current : nextHasCode))
+    }
+
+    const scheduleUpdateHasCode = () => {
+      if (frameId !== null) return
+      frameId = requestAnimationFrame(updateHasCode)
+    }
+
+    scheduleUpdateHasCode()
+
+    if (!article) {
+      return () => {
+        if (frameId !== null) {
+          cancelAnimationFrame(frameId)
+        }
+      }
+    }
+
+    const observer = new MutationObserver(scheduleUpdateHasCode)
+    observer.observe(article, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class']
+    })
+
+    return () => {
+      observer.disconnect()
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId)
+      }
+    }
+  }, [post, lock])
 
   const commentEnable =
     siteConfig('COMMENT_TWIKOO_ENV_ID') ||
