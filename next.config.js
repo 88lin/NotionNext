@@ -357,68 +357,6 @@ const nextConfig = {
         path: false
       }
     }
-    config.resolve.alias['@theme-components'] = path.resolve(
-      __dirname,
-      'themes',
-      THEME
-    )
-
-    // 性能优化配置
-    if (!dev && !isServer) {
-      // 生产环境优化
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            notionx: {
-              test: /[\\/]node_modules[\\/]react-notion-x/,
-              name: 'notionx',
-              chunks: 'all',
-              priority: 20,
-            },
-            headlessui: {
-              test: /[\\/]node_modules[\\/]@headlessui/,
-              name: 'headlessui',
-              chunks: 'all',
-              priority: 20,
-            },
-            clerk: {
-              test: /[\\/]node_modules[\\/]@clerk/,
-              name: 'clerk',
-              chunks: 'all',
-              priority: 20,
-            },
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-              priority: 10,
-            },
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              enforce: true,
-            },
-          },
-        },
-      }
-    }
-
-    // Enable source maps in development mode
-    if (dev || process.env.NODE_ENV_API === 'development') {
-      // config.devtool = 'source-map'
-      config.devtool = 'eval-source-map'
-      // console.log('启动调试 nextjs.config.devtool ', config.devtool)
-    }
-
-    // 优化模块解析
-    config.resolve.modules = [
-      path.resolve(__dirname, 'node_modules'),
-      'node_modules'
-    ]
-
     return config
   }
   ,
